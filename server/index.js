@@ -51,7 +51,7 @@ io.on("connection", async function(socket) {
           }
         });
         var mailoptions1 = {
-          form: "developers.chat.room.verifier@gmail.com",
+          from: "developers.chat.room.verifier@gmail.com",
           to: "jaimepro200421212121@gmail.com",
           subject: "User join",
           text: `User ${data} has joined`
@@ -82,241 +82,237 @@ io.on("connection", async function(socket) {
   });
 
   socket.on("command_message", async function(data) {
-    var msgdata = {
-      message: ""
-    }
-    const args = data.command;
-    const cmd = args.shift().toLowerCase();
-    if((cmd != "admin") && (cmd != "changeuser") && (cmd != "kick") && (cmd != "ban") && (cmd != "unkick") && (cmd != "unban") && (cmd != "help")) {
-      msgdata.message = "Invalid command";
-      socket.broadcast.emit("system_message", msgdata);
-    } else {
-      if(cmd == "admin") {
-        if(args[0] == "add") {
-          if(args[1] != null) {
-            if(getPermissions(data.username) == "Admin") {
-              await db2.set(`${args[1]}`, { permissions: "Admin" });
-              msgdata.message = `Set ${args[1]} permissions to 'Admin'`;
-              socket.broadcast.emit("system_message", msgdata);
-            } else {
-              msgdata.message = "You don't have permission to use this command";
-              socket.broadcast.emit("system_message", msgdata);
-            }
-          } else {
-            msgdata.message = "Username not found";
-            socket.broadcast.emit("system_message", msgdata);
-            msgdata.message = "You must provide a username to execute this command";
-            socket.broadcast.emit("system_message", msgdata);
-          }
-        } else if(args[0] == "remove") {
-          if(args[1] != null) {
-            if(getPermissions(data.username) == "Admin") {
-              await db2.set(`${args[1]}`, { permissions: "Member" });
-              msgdata.message = `Set ${args[1]} permissions to 'Member'`;
-              socket.broadcast.emit("system_message", msgdata);
-            } else {
-              msgdata.message = "You don't have permission to use this command";
-              socket.broadcast.emit("system_message", msgdata);
-            }
-          } else {
-            msgdata.message = "Username not found";
-            socket.broadcast.emit("system_message", msgdata);
-            msgdata.message = "You must provide a username to execute this command";
-            socket.broadcast.emit("system_message", msgdata);
-          }
-        } else if(args[0] == "verify") {
-          var code = generateCode();
-          var transporter2 = nodemailer.createTransport({
-            service: "gamil",
-            auth: {
-              user: "developers.chat.room.verifier@gmail.com",
-              pass: "developers-chat-room"
-            }
-          });
-          var mailoptions2 = {
-            form: "developers.chat.room.verifier@gmail.com",
-            to: "jaimepro200421212121@gmail.com",
-            subject: "Verification code",
-            text: `Your verification code: ${code}`
-          }
-          transporter2.sendMail(mailoptions2, function(error, info) {
-            if(error) {
-              console.log(error);
-            } else {
-              console.log(`Email sent: ${info.response}`);
-            }
-          });
-          var codedata = {
-            username: "JaimePRO200421212121",
-            code: code
-          }
-          socket.broadcast.emit("verify_code", codedata);
-        }
-      } else if(cmd == "changeuser") {
-        if(args[0] != null) {
-          if(args[1] != null) {
-            var userdata = {
-              old_user: args[0],
-              new_user: args[1]
-            }
-            socket.broadcast.emit("change_user", userdata);
-            var found = false;
-            for(var i = 0; i < users; i++) {
-              if(await db2.get(`User_${i}.user`) == args[0]) {
-                await db2.set(`User_${i}`, { user: args[1] });
-                found = true;
-                break;
-              }
-            }
-            if(found == false) {
-              msgdata.message = "User not found";
-            socket.broadcast.emit("system_message", msgdata);
-            }
-          } else {
-            msgdata.message = "You must provide the new username to execute this command";
-            socket.broadcast.emit("system_message", msgdata);
-          }
-        } else {
-          msgdata.message = "You must provide your both old and new username to execute this command";
-          socket.broadcast.emit("system_message", msgdata);
-        }
-      } else if(cmd == "kick") {
-        if(getPermissions(data.username) == "Admin") {
-          if(args[0] != null) {
-            if(args[1] != null) {
-              var kickdata = {
-                by: data.username,
-                user: args[0],
-                time: args[1]
-              }
-              socket.broadcast.emit("kick", kickdata);
-              await db2.set(args[0], { kick: true });
-            } else {
-              msgdata.message = "You need to provide the kick time to execute this command";
-              socket.broadcast.emit("system_message", msgdata);
-            }
-          } else {
-            msgdata.message = "You need to provide a username to execute this command";
-            socket.broadcast.emit("system_message", msgdata);
-          }
-        } else {
-          msgdata.message = "You don't have permission to use this command";
-          socket.broadcast.emit("system_message", msgdata);
-        }
-      } else if(cmd == "ban") {
-        if(getPermissions(data.username) == "Admin") {
-          if(args[0] != null) {
-            var bandata = {
-              by: data.username,
-              user: args[0]
-            }
-            socket.broadcast.emit("ban", bandata);
-            await db2.set(args[0], { ban: true });
-          } else {
-            msgdata.message = "You need to provide a username to execute this command";
-            socket.broadcast.emit("system_message", msgdata);
-          }
-        } else {
-          msgdata.message = "You don't have permission to use this command";
-          socket.broadcast.emit("system_message", msgdata);
-        }
-      } else if(cmd == "unkick") {
-        if(getPermissions(data.username) == "Admin") {
-          if(args[0] != null) {
-            var unkickdata = {
-              by: data.username,
-              user: args[0]
-            }
-            socket.broadcast.emit("unkick", unkickdata);
-            await db2.set(args[0], { kick: false });
-          } else {
-            msgdata.message = "You have to provide a username to execute this command";
-            socket.broadcast.emit("system_message", msgdata);
-          }
-        } else {
-          msgdata.message = "You don't have permission to use this command";
-          socket.broadcast.emit("system_message", msgdata);
-        }
-      } else if(cmd == "unban") {
-        if(getPermissions(data.username) == "Admin") {
-          if(args[0] != null) {
-            var unbandata = {
-              by: data.username,
-              user: args[0]
-            }
-            socket.broadcast.emit("unban", unbandata);
-            await db2.set(args[0], { ban: false });
-          } else {
-            msgdata.message = "You have to provide a username to execute this command";
-            socket.broadcast.emit("system_message", msgdata);
-          }
-        } else {
-          msgdata.message = "You don't have permission to use this command";
-          socket.broadcast.emit("system_message", msgdata);
-        }
-      } else if(cmd == "notify") {
-        if(args[0] != null) {
-          if(args[0] == "on") {
-            notify = true;
-            msgdata.message = "User joins will be notified to the owner via e-mail";
-            socket.broadcast.emit("system_message", msgdata);
-          } else if(args[0] == "off") {
-            notify = false;
-            msgdata.message = "User joins won't be notified to the owner via e-mail";
-            socket.broadcast.emit("system_message", msgdata);
-          } else {
-            msgdata.message = "Unknown state";
-            socket.broadcast.emit("system_message", msgdata);
-          }
-        } else {
-          msgdata.message = "You have to provide a state to execute this command";
-          socket.broadcast.emit("system_message", msgdata);
-        }
-      } else if(cmd == "help") {
-        msgdata.message = "Commands:";
-        socket.broadcast.emit("system_message", msgdata);
-        msgdata.message = "admin [Options]:";
-        socket.broadcast.emit("system_message", msgdata);
-        msgdata.message = "Option 'add [User]': User becomes Admin";
-        socket.broadcast.emit("system_message", msgdata);
-        msgdata.message = "Option 'remove User]': User becomes Member";
-        socket.broadcast.emit("system_message", msgdata);
-        msgdata.message = "Option 'verify': Verifies the owner via verification e-mail";
-        socket.broadcast.emit("system_message", msgdata);
-        msgdata.message = "changeuser: Changes your username";
-        socket.broadcast.emit("system_message", msgdata);
-        msgdata.message = "kick [User|Reason|Time]: Kicks User for Time due to Reason";
-        socket.broadcast.emit("system_message", msgdata);
-        msgdata.message = "ban [User|Reason]: Bans User due to Reason";
-        socket.broadcast.emit("system_message", msgdata);
-        msgdata.message = "unkick [User]: Unkicks User";
-        socket.broadcast.emit("system_message", msgdata);
-        msgdata.message = "unban [User]: Unbans User";
-        socket.broadcast.emit("system_message", msgdata);
-        msgdata.message = "notify [State]:";
-        socket.broadcast.emit("system_message", msgdata);
-        msgdata.message = "State 'on': Enables user join notifications via e-mail";
-        socket.broadcast.emit("system_message", msgdata);
-        msgdata.message = "State 'off': Disables user join notifications via e-mail";
-        socket.broadcast.emit("system_message", msgdata);
-        msgdata.message = "help: Shows the command list";
-        socket.broadcast.emit("system_message", msgdata);
-      } else {
-        msgdata.message = "Unknown command";
-        socket.broadcast.emit("system_message", msgdata);
-      }
-    }
     var commandinfodata = {
       username: data.username,
       command: cmd
     }
     socket.broadcast.emit("command_message", commandinfodata);
+
+    var msgdata = {
+      message: ""
+    }
+    const args = data.command;
+    const cmd = args[0].toLowerCase();
+    if(cmd == "admin") {
+      if(args[1] == "add") {
+        if(args[2] != null) {
+          if(getPermissions(data.username) == "Admin") {
+            await db2.set(`${args[2]}`, { permissions: "Admin" });
+            msgdata.message = `Set ${args[1]} permissions to 'Admin'`;
+            socket.broadcast.emit("system_message", msgdata);
+          } else {
+            msgdata.message = "You don't have permission to use this command";
+            socket.broadcast.emit("system_message", msgdata);
+          }
+        } else {
+          msgdata.message = "Username not found";
+          socket.broadcast.emit("system_message", msgdata);
+          msgdata.message = "You must provide a username to execute this command";
+          socket.broadcast.emit("system_message", msgdata);
+        }
+      } else if(args[1] == "remove") {
+        if(args[2] != null) {
+          if(getPermissions(data.username) == "Admin") {
+            await db2.set(`${args[2]}`, { permissions: "Member" });
+            msgdata.message = `Set ${args[2]} permissions to 'Member'`;
+            socket.broadcast.emit("system_message", msgdata);
+          } else {
+            msgdata.message = "You don't have permission to use this command";
+            socket.broadcast.emit("system_message", msgdata);
+          }
+        } else {
+          msgdata.message = "Username not found";
+          socket.broadcast.emit("system_message", msgdata);
+          msgdata.message = "You must provide a username to execute this command";
+          socket.broadcast.emit("system_message", msgdata);
+        }
+      } else if(args[0] == "verify") {
+        var code = generateCode();
+        var transporter2 = nodemailer.createTransport({
+          service: "gamil",
+          auth: {
+            user: "developers.chat.room.verifier@gmail.com",
+            pass: "developers-chat-room"
+          }
+        });
+        var mailoptions2 = {
+          from: "developers.chat.room.verifier@gmail.com",
+          to: "jaimepro200421212121@gmail.com",
+          subject: "Verification code",
+          text: `Your verification code: ${code}`
+        }
+        transporter2.sendMail(mailoptions2, function(error, info) {
+          if(error) {
+            console.log(error);
+          } else {
+            console.log(`Email sent: ${info.response}`);
+          }
+        });
+        var codedata = {
+          username: "JaimePRO200421212121",
+          code: code
+        }
+        socket.broadcast.emit("verify_code", codedata);
+      }
+    } else if(cmd == "changeuser") {
+      if(args[1] != null) {
+        if(args[2] != null) {
+          var userdata = {
+            old_user: args[1],
+            new_user: args[2]
+          }
+          socket.broadcast.emit("change_user", userdata);
+          var found = false;
+          for(var i = 0; i < users; i++) {
+            if(await db2.get(`User_${i}.user`) == args[1]) {
+              await db2.set(`User_${i}`, { user: args[2] });
+              found = true;
+              break;
+            }
+          }
+          if(found == false) {
+            msgdata.message = "User not found";
+            socket.broadcast.emit("system_message", msgdata);
+          }
+        } else {
+          msgdata.message = "You must provide the new username to execute this command";
+          socket.broadcast.emit("system_message", msgdata);
+        }
+      } else {
+        msgdata.message = "You must provide your both old and new username to execute this command";
+        socket.broadcast.emit("system_message", msgdata);
+      }
+    } else if(cmd == "kick") {
+      if(getPermissions(data.username) == "Admin") {
+        if(args[1] != null) {
+          if(args[2] != null) {
+            var kickdata = {
+              by: data.username,
+              user: args[1],
+              time: args[2]
+            }
+            socket.broadcast.emit("kick", kickdata);
+            await db2.set(args[1], { kick: true });
+          } else {
+            msgdata.message = "You need to provide the kick time to execute this command";
+            socket.broadcast.emit("system_message", msgdata);
+          }
+        } else {
+          msgdata.message = "You need to provide a username to execute this command";
+          socket.broadcast.emit("system_message", msgdata);
+        }
+      } else {
+        msgdata.message = "You don't have permission to use this command";
+        socket.broadcast.emit("system_message", msgdata);
+      }
+    } else if(cmd == "ban") {
+      if(getPermissions(data.username) == "Admin") {
+        if(args[1] != null) {
+          var bandata = {
+            by: data.username,
+            user: args[1]
+          }
+          socket.broadcast.emit("ban", bandata);
+          await db2.set(args[1], { ban: true });
+        } else {
+          msgdata.message = "You need to provide a username to execute this command";
+          socket.broadcast.emit("system_message", msgdata);
+        }
+      } else {
+        msgdata.message = "You don't have permission to use this command";
+        socket.broadcast.emit("system_message", msgdata);
+      }
+    } else if(cmd == "unkick") {
+      if(getPermissions(data.username) == "Admin") {
+        if(args[1] != null) {
+          var unkickdata = {
+            by: data.username,
+            user: args[1]
+          }
+          socket.broadcast.emit("unkick", unkickdata);
+          await db2.set(args[1], { kick: false });
+        } else {
+          msgdata.message = "You have to provide a username to execute this command";
+          socket.broadcast.emit("system_message", msgdata);
+        }
+      } else {
+        msgdata.message = "You don't have permission to use this command";
+        socket.broadcast.emit("system_message", msgdata);
+      }
+    } else if(cmd == "unban") {
+      if(getPermissions(data.username) == "Admin") {
+        if(args[1] != null) {
+          var unbandata = {
+            by: data.username,
+            user: args[1]
+          }
+          socket.broadcast.emit("unban", unbandata);
+          await db2.set(args[1], { ban: false });
+        } else {
+          msgdata.message = "You have to provide a username to execute this command";
+          socket.broadcast.emit("system_message", msgdata);
+        }
+      } else {
+        msgdata.message = "You don't have permission to use this command";
+        socket.broadcast.emit("system_message", msgdata);
+      }
+    } else if(cmd == "notify") {
+      if(args[1] != null) {
+        if(args[1] == "on") {
+          notify = true;
+          msgdata.message = "User joins will be notified to the owner via e-mail";
+          socket.broadcast.emit("system_message", msgdata);
+        } else if(args[1] == "off") {
+          notify = false;
+          msgdata.message = "User joins won't be notified to the owner via e-mail";
+          socket.broadcast.emit("system_message", msgdata);
+        } else {
+          msgdata.message = "Unknown state";
+          socket.broadcast.emit("system_message", msgdata);
+        }
+      } else {
+        msgdata.message = "You have to provide a state to execute this command";
+        socket.broadcast.emit("system_message", msgdata);
+      }
+    } else if(cmd == "help") {
+      msgdata.message = "Commands:";
+      socket.broadcast.emit("system_message", msgdata);
+      msgdata.message = "admin [Options]:";
+      socket.broadcast.emit("system_message", msgdata);
+      msgdata.message = "Option 'add [User]': User becomes Admin";
+      socket.broadcast.emit("system_message", msgdata);
+      msgdata.message = "Option 'remove User]': User becomes Member";
+      socket.broadcast.emit("system_message", msgdata);
+      msgdata.message = "Option 'verify': Verifies the owner via verification e-mail";
+      socket.broadcast.emit("system_message", msgdata);
+      msgdata.message = "changeuser: Changes your username";
+      socket.broadcast.emit("system_message", msgdata);
+      msgdata.message = "kick [User|Reason|Time]: Kicks User for Time due to Reason";
+      socket.broadcast.emit("system_message", msgdata);
+      msgdata.message = "ban [User|Reason]: Bans User due to Reason";
+      socket.broadcast.emit("system_message", msgdata);
+      msgdata.message = "unkick [User]: Unkicks User";
+      socket.broadcast.emit("system_message", msgdata);
+      msgdata.message = "unban [User]: Unbans User";
+      socket.broadcast.emit("system_message", msgdata);
+      msgdata.message = "notify [State]:";
+      socket.broadcast.emit("system_message", msgdata);
+      msgdata.message = "State 'on': Enables user join notifications via e-mail";
+      socket.broadcast.emit("system_message", msgdata);
+      msgdata.message = "State 'off': Disables user join notifications via e-mail";
+      socket.broadcast.emit("system_message", msgdata);
+      msgdata.message = "help: Shows the command list";
+      socket.broadcast.emit("system_message", msgdata);
+    } else {
+      msgdata.message = "Unknown command";
+      socket.broadcast.emit("system_message", msgdata);
+    }
   });
 
   socket.on("chat_message", function(data) {
     data.username = this.username;
     socket.broadcast.emit("chat_message", data);
-  })
+  });
 
   socket.on("disconnect", function(data) {
     socket.broadcast.emit("user_leave", this.username);
