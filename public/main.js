@@ -38,12 +38,14 @@ form.addEventListener("submit", function(event) {
   event.preventDefault();
 
   if(input.value.startsWith(prefix)) {
-    var command = input.value.slice(prefix.length).trim().split(/ + /g);
+    var command = input.value.slice(prefix.length).trim().split(" ");
     addCommandMessage(window.localStorage.getItem("username"), command);
 
     socket.emit("command_message", {
       username: window.localStorage.getItem("username"),
-      command: command
+      command: command[0],
+      arg1: command[1],
+      arg2: command[2]
     });
   } else {
     addMessage(window.localStorage.getItem("username"), input.value);
@@ -79,7 +81,7 @@ socket.on("chat_message", function(data) {
 
 socket.on("command_message", function(data) {
   addCommandMessage(data.username, data.command);
-})
+});
 
 socket.on("system_message", function(data) {
   addSystemMessage(data.message);
