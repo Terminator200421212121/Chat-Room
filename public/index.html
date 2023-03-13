@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chat Room</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <style>
+      body {
+        margin: 0;
+        font-family: sans-serif;
+      }
+
+      form {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        display: flex;
+        box-sizing: border-box;
+        padding: 0.25rem;
+      }
+
+      form input {
+        border: 0;
+        padding: 0.5rem;
+        width: 100%;
+        outline: 0;
+        margin-right: 0.5rem;
+        border-radius: 20px;
+        background: #ccc;
+      }
+
+      form button {
+        width: 6rem;
+        background-color: #1b8c00;
+        color: white;
+        border: none;
+        padding: 0.5rem;
+        cursor: pointer;
+        border-radius: 20px;
+        text-transform: uppercase;
+      }
+
+      form button:hover {
+        background-color: #166d01;
+      }
+
+      .messages {
+        margin: 0;
+        padding: 0;
+        margin-bottom: 3rem;
+        list-style-type: none;
+      }
+
+      .messages div {
+        width: 25%;
+        margin-top: 10px;
+        margin-left: 1%;
+        margin-right: 10px;
+      }
+
+      .messages div div {
+        width: 50%;
+        margin: 0;
+        padding: 5px;
+        border-radius: 20px;
+      }
+
+      .messages div div span {
+        margin-top: 0;
+        margin-left: 5px;
+        padding-top: 0;
+        vertical-align: 1px;
+        text-indent: 10px;
+        font-size: 10px;
+        font-weight: bold;
+      }
+
+      .messages div div p {
+        padding: 2px;
+        margin-top: 0;
+        margin-bottom: 0;
+        font-size: 15px;
+        text-indent: 10px;
+        vertical-align: middle;
+      }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/socketio.js"></script>
+  </head>
+  <body>
+    <div class="messages"></div>
+    <form>
+      <input type="text" class="input" autocomplete="off" autofocus/>
+      <button>Send</button>
+    </form>
+    <script src="/main.js"></script>
+  </body>
+</html>

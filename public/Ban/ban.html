@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Banned</title>
+        <meta name="viewport" content="width=device-width,minimum-scale=1">
+        <style>
+            .img-with-text {
+                text-align: center;
+            }
+
+            .img-with-text .big-text {
+                font-size: 50px;
+                text-align: center;
+                margin-top: 0;
+                margin-bottom: 0;
+            }
+
+            .img-with-text .medium-text {
+                font-size: 25px;
+                text-align: center;
+            }
+
+            .img-with-text img {
+                text-align: center;
+                display: block;
+                margin: 0 auto;
+            }
+        </style>
+        <script src="../socket.io/socket.io.js"></script>
+        <script src="../socketio.js"></script>
+    </head>
+    <body>
+        <div class="img-with-text">
+            <img src="../img/Ban.jpg" alt="Banned" width="400px" height="400px">
+            <p class="big-text">You have been banned</p>
+            <p class="medium-text">By: <span id="by"></span></p>
+            <p class="medium-text">Reason: <span id="reason"></span></p>
+        </div>
+        <script>
+            var by = document.getElementById("by");
+            var reason = document.getElementById("reason");
+            socket.on("ban_info", function(data) {
+                if(window.localStorage.getItem("username") == null) {
+                    window.localStorage.setItem("username", data.user);
+                }
+                by.innerHTML = data.by;
+                if(data.reason != null) {
+                    reason.innerHTML = data.reason;
+                } else {
+                    reason.innerHTML = "No reason provided";
+                }
+            });
+
+            socket.on("unban", function(data) {
+                var unbandata = {
+                    by: data.by,
+                    user: data.user
+                }
+                socket.emit("unbanned", unbandata);
+                window.location.pathname = "../index.html";
+            });
+        </script>
+    </body>
+</html>
