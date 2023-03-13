@@ -6,6 +6,7 @@ const prefix = "!";
 window.onload = function() {
   if(window.localStorage.getItem("username") == null) {
     var username = prompt("Enter your username:", "");
+    window.localStorage.setItem("username", username);
     while(window.localStorage.getItem("username") == null) {
       username = prompt("Enter your username:", "");
       window.localStorage.setItem("username", username);
